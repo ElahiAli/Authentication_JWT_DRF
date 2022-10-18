@@ -1,7 +1,5 @@
-from django.shortcuts import render
-
 from core.models import User
-from core.utils import access_token, refresh_token
+from core.utils import get_tokens_for_user
 from .serializers import RegisterSerializer, UserSerializer
 from rest_framework import generics, status
 from rest_framework.viewsets import ModelViewSet
@@ -28,10 +26,7 @@ def Login(request):
     try:
         user = User.objects.get(email=email)
         if user.check_password(password):
-            token = {
-                "access-token": access_token(user.id, user.username, user.email),
-                "refresh-token": refresh_token(user.id, user.username, user.email),
-            }
+            token = get_tokens_for_user(user)
             return Response(token, status=status.HTTP_200_OK)
 
     except User.DoesNotExist:
