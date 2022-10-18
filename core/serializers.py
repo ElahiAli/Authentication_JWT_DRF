@@ -4,14 +4,13 @@ from .models import User
 
 
 class RegisterSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = User
         fields = ['id','username','first_name','last_name','email','phone','password']
         extra_kwargs = {
             'password':{'write_only': True},
         }
-    
+
     def validate_phone(self,value):
         regex = "^(\+98|0)?9\d{9}$"
         if not re.match(regex,str(value)):
@@ -32,6 +31,8 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.save()
         return user
         
+
+    
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
