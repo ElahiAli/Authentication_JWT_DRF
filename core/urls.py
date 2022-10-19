@@ -13,7 +13,7 @@ router.register('users', views.UserView, basename='user')
 urlpatterns = [
     path('register/', views.RegisterViewSet.as_view(), name='register'),
     path('login/', views.Login, name='login'),
+    path('verify-email/', views.VerifyEmail.as_view(), name='email-verify'),
     path('', include(router.urls)),
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
 ]

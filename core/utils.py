@@ -5,8 +5,17 @@ from django.core.mail import EmailMessage
 import jwt
 import datetime
 import time
-from rest_framework_jwt.settings import api_settings
+from django.core.mail import EmailMessage
 from rest_framework_simplejwt.tokens import RefreshToken
+
+
+class Util:
+    @staticmethod
+    def send_email(data):
+        email = EmailMessage(
+            subject=data['email_subject'], body=data['email_body'], to=[data['email_to']])
+        email.send()
+
 # def generate_token(user_id):
 #     now = int(time.time())
 #     exp_time = int(now) + (2628000*60)
@@ -21,14 +30,13 @@ from rest_framework_simplejwt.tokens import RefreshToken
 #     return token
 
 
-# def access_token(id, username, email):
+# def access_token(id,):
 #     return jwt.encode({
 #         'user_id': id,
-#         'username': username,
-#         'email': email,
-#         'exp': datetime.datetime.utcnow() + datetime.timedelta(days=30),
-
+#         'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1),
+#         'iat': datetime.datetime.utcnow()
 #     }, settings.SECRET_KEY, algorithm='HS256')
+
 
 # def access_token(user):
 #     jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
