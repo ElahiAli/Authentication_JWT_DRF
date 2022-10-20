@@ -16,7 +16,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         regex = "^(\+98|0)?9\d{9}$"
         if not re.match(regex, str(value)):
             raise serializers.ValidationError("phone number is not currect.")
-        return int(value)
+        return value
 
     def save(self, **kwargs):
         user = User(

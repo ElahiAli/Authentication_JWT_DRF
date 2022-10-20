@@ -13,6 +13,18 @@ import jwt
 from django.conf import settings
 
 
+def sending_email_verfication(request, user_data):
+    user = User.objects.get(email=user_data['email'])
+    token = RefreshToken.for_user(user).access_token
+    current_site = get_current_site(request).domain
+    relativeLink = reverse('email-verify')
+    absurl = 'http://' + current_site + relativeLink + "?token=" + str(token)
+    email_body = '' + absurl
+    data = {'email_body': email_body,
+            'email_subject': '', 'email_to': user.email}
+    Util.send_email(data)
+
+
 class RegisterViewSet(generics.GenericAPIView):
     serializer_class = RegisterSerializer
 
@@ -20,6 +32,8 @@ class RegisterViewSet(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        print(serializer.data['email'])
+        sending_email_verfication(request, serializer.data)
         return Response({"message": "user create successfully."}, status=status.HTTP_200_OK)
 
 
@@ -38,18 +52,6 @@ def Login(request):
         return Response({"error": "Invalid credentials"}, status=status.HTTP_403_FORBIDDEN)
 
 
-def sending_email_verfication(request, user_data):
-    user = User.objects.get(email=user_data['email'])
-    token = RefreshToken.for_user(user).access_token
-    current_site = get_current_site(request).domain
-    relativeLink = reverse('email-verify')
-    absurl = 'http://' + current_site + relativeLink + "?token=" + str(token)
-    email_body = '' + absurl
-    data = {'email_body': email_body,
-            'email_subject': '', 'email_to': user.email}
-    Util.send_email(data)
-
-
 class VerifyEmail(generics.GenericAPIView):
     serializer_class = EmailVerificationSerializer
 
@@ -59,8 +61,8 @@ class VerifyEmail(generics.GenericAPIView):
             payload = jwt.decode(
                 token, settings.SECRET_KEY, algorithms=['HS256'])
             user = User.objects.get(id=payload['user_id'])
-            if not user.is_verified:
-                # user.is_verified = True
+            if not user.is_verify:
+                user.is_verify = True
                 user.save()
 
             return Response({"email": "Verified Successfully."}, status=status.HTTP_200_OK)
