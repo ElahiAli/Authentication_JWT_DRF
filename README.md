@@ -14,20 +14,25 @@
   <li>user : need Authentication</li>
 </ul>
 
-```
+`
 more:
 after user registration, system would send an email for him and he can confirm his account.
-```
+`
 
 ### installing requirements.txt:
 
-`pip install -r requirements.txt`
+```
+pip install -r requirements.txt
+```
 
 ### initial database:
-
-`python manage.py makemigrations`<br/>
-`python manage.py migrate`
+```
+python manage.py makemigrations
+python manage.py migrate
+```
 
 ### run Application:
 
-`python manage.py runserver`
+```
+python manage.py runserver
+```
