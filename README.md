@@ -19,20 +19,20 @@ more:
 after user registration, system would send an email for him and he can confirm his account.
 `
 
-### installing requirements.txt:
-
+### Installing requirements.txt:
 ```
 pip install -r requirements.txt
 ```
-
-### initial database:
+### Initial Database:
 ```
 python manage.py makemigrations
 python manage.py migrate
 ```
-
-### run Application:
-
+### Create Superuser
+```
+python manage.py createsuperuser
+```
+### Run Application:
 ```
 python manage.py runserver
 ```
