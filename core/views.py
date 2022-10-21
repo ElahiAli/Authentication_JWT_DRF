@@ -1,8 +1,8 @@
 from core.models import User
-from .utils import get_tokens_for_user, Util
-from .serializers import RegisterSerializer, UserSerializer, EmailVerificationSerializer
+from .utils import get_tokens_for_user, Util, generate_token
+from .serializers import Login, RegisterSerializer, ResendChangedEmailSerializer, UserSerializer, EmailVerificationSerializer
 from rest_framework import generics, status
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.decorators import api_view
@@ -11,6 +11,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 import jwt
 from django.conf import settings
+from rest_framework.mixins import CreateModelMixin, ListModelMixin
 
 
 def sending_email_verfication(request, user_data):
@@ -37,19 +38,30 @@ class RegisterViewSet(generics.GenericAPIView):
         return Response({"message": "user create successfully."}, status=status.HTTP_200_OK)
 
 
-@api_view(['POST'])
-def Login(request):
-    email = request.data.get('email')
-    password = request.data.get('password')
+class LoginView(CreateModelMixin, GenericViewSet):
+    serializer_class = Login
 
-    try:
-        user = User.objects.get(email=email)
-        if user.check_password(password):
-            token = get_tokens_for_user(user)
-            return Response(token, status=status.HTTP_200_OK)
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            user = User.objects.get(email=serializer.validated_data['email'])
+            if user.check_password(serializer.validated_data['password']):
+                if not user.is_verify:
+                    token = {
+                        "token": generate_token(user.id),
+                        "message": "please verify your account."
+                    }
+                    return Response(status=status.HTTP_406_NOT_ACCEPTABLE, data=token)
 
-    except User.DoesNotExist:
-        return Response({"error": "Invalid credentials"}, status=status.HTTP_403_FORBIDDEN)
+                token = get_tokens_for_user(user)
+                return Response(token, status=status.HTTP_200_OK)
+
+        except User.DoesNotExist:
+            return Response({"error": "Invalid credentials"}, status=status.HTTP_403_FORBIDDEN)
+
+    def perform_create(self, serializer):
+        return self.post(self, request, *args, **kwargs)
 
 
 class VerifyEmail(generics.GenericAPIView):
@@ -71,6 +83,31 @@ class VerifyEmail(generics.GenericAPIView):
             return Response({"error": "Activation expired try again."}, status=status.HTTP_400_BAD_REQUEST)
         except jwt.exceptions.DecodeError:
             return Response({"error": "Invalid Token"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ResendChangeEmailView(CreateModelMixin, GenericViewSet):
+    serializer_class = ResendChangedEmailSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            token = serializer.validated_data['token']
+            email = serializer.validated_data['email']
+            payload = jwt.decode(
+                token, key='time is the only asset', algorithms='HS256')
+
+            user = User.objects.get(id=payload['sub'])
+            user_data = {"email": user.email}
+
+            if User.objects.filter(email=email).exists():
+                sending_email_verfication(request, user_data)
+                return Response({"message": "Email Resended!"}, status=status.HTTP_200_OK)
+
+            user.email = email
+            user.save()
+            user_data = {"email": user.email}
+            sending_email_verfication(request, user_data)
+        return Response({"message": "Email Resended!"}, status=status.HTTP_200_OK)
 
 
 class UserView(ModelViewSet):

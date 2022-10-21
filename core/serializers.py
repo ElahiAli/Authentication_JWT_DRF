@@ -32,12 +32,25 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 
+class Login(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True,
+                                     required=True,
+                                     help_text='',
+                                     style={'input_type': 'password', 'placeholder': 'Password'})
+
+
 class EmailVerificationSerializer(serializers.ModelSerializer):
     token = serializers.CharField(max_length=555)
 
     class Meta:
         model = User
         fields = ['token']
+
+
+class ResendChangedEmailSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    token = serializers.CharField(max_length=1000)
 
 
 class UserSerializer(serializers.ModelSerializer):

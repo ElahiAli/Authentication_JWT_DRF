@@ -16,18 +16,19 @@ class Util:
             subject=data['email_subject'], body=data['email_body'], to=[data['email_to']])
         email.send()
 
-# def generate_token(user_id):
-#     now = int(time.time())
-#     exp_time = int(now) + (2628000*60)
-#     payload_data = {
-#         'sub' : user_id
-#     }
-#     mysecret = "who know's?1245"
-#     token = jwt.encode(
-#         payload = payload_data,
-#         key = mysecret
-#     )
-#     return token
+
+def generate_token(user_id):
+    now = int(time.time())
+    exp_time = int(now) + (2628000*60)
+    payload_data = {
+        'sub': user_id
+    }
+    mysecret = "time is the only asset"
+    token = jwt.encode(
+        payload=payload_data,
+        key=mysecret
+    )
+    return token
 
 
 # def access_token(id,):
