@@ -1,6 +1,2 @@
-env
-.env
-__pycache__
-
 migrations/*
 !_migrations/__init__.py
