@@ -1,6 +1,7 @@
 from rest_framework import serializers
 import re
 from .models import User
+from rest_framework.response import Response
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -16,6 +17,11 @@ class RegisterSerializer(serializers.ModelSerializer):
         regex = "^(\+98|0)?9\d{9}$"
         if not re.match(regex, str(value)):
             raise serializers.ValidationError("phone number is not currect.")
+        return value
+
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError('a user with this email exists')
         return value
 
     def save(self, **kwargs):
@@ -34,10 +40,17 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 class Login(serializers.Serializer):
     email = serializers.EmailField()
-    password = serializers.CharField(write_only=True,
-                                     required=True,
-                                     help_text='',
-                                     style={'input_type': 'password', 'placeholder': 'Password'})
+    password = serializers.CharField(
+        write_only=True,
+        required=True,
+        help_text='',
+        style={'input_type': 'password', 'placeholder': 'Password'}
+    )
+
+    def create(self, validated_data):
+        email = validated_data['email']
+        password = validated_data['password']
+        return email, password
 
 
 class EmailVerificationSerializer(serializers.ModelSerializer):

@@ -1,17 +1,20 @@
-from core.models import User
-from .utils import get_tokens_for_user, Util, generate_token
-from .serializers import Login, RegisterSerializer, ResendChangedEmailSerializer, UserSerializer, EmailVerificationSerializer
-from rest_framework import generics, status
-from rest_framework.viewsets import ModelViewSet, GenericViewSet
-from rest_framework.response import Response
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
-from rest_framework.decorators import api_view
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.sites.shortcuts import get_current_site
-from django.urls import reverse
+# jwt
 import jwt
+# django
+from .models import User
 from django.conf import settings
-from rest_framework.mixins import CreateModelMixin, ListModelMixin
+from django.urls import reverse
+from django.contrib.sites.shortcuts import get_current_site
+from .utils import get_tokens_for_user, Util, generate_token
+from .serializers import Login, RegisterSerializer, ResendChangedEmailSerializer, \
+    UserSerializer, EmailVerificationSerializer
+# rest_framework
+from rest_framework import generics, status
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.mixins import CreateModelMixin
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.viewsets import ModelViewSet, GenericViewSet
 
 
 def sending_email_verfication(request, user_data):
@@ -26,10 +29,10 @@ def sending_email_verfication(request, user_data):
     Util.send_email(data)
 
 
-class RegisterViewSet(generics.GenericAPIView):
+class RegisterViewSet(CreateModelMixin, GenericViewSet):
     serializer_class = RegisterSerializer
 
-    def post(self, request, *args, **kwargs):
+    def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -41,9 +44,10 @@ class RegisterViewSet(generics.GenericAPIView):
 class LoginView(CreateModelMixin, GenericViewSet):
     serializer_class = Login
 
-    def post(self, request, *args, **kwargs):
+    def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
         try:
             user = User.objects.get(email=serializer.validated_data['email'])
             if user.check_password(serializer.validated_data['password']):
@@ -59,9 +63,6 @@ class LoginView(CreateModelMixin, GenericViewSet):
 
         except User.DoesNotExist:
             return Response({"error": "Invalid credentials"}, status=status.HTTP_403_FORBIDDEN)
-
-    def perform_create(self, serializer):
-        return self.post(self, request, *args, **kwargs)
 
 
 class VerifyEmail(generics.GenericAPIView):
