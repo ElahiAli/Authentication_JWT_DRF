@@ -1,6 +1,7 @@
 ## Authentication_API_JWT_DRF
 
-<h3>endpoints:</h3>
+### Endpoints:
+
 <ul> 
   <li>localhost/auth/register</li> 
   <li>localhost/auth/login</li>
@@ -8,7 +9,8 @@
   <li>localhost/auth/resend-email</li>
 </ul>
 
-<h3>permissions:</h3>
+### Permissions:
+
 <ul> 
   <li>register : anyone</li> 
   <li>login : anyone</li>
@@ -16,10 +18,11 @@
   <li>resend-email : anyone</li>
 </ul>
 
-_more:_
+_More:_
 
 1. after user registration, system would send an email for him and he can confirm his account.
-2. without verifying account, user can not login.
+2. without verifying account, user can't login.
+3. password can't be less than 8 and shouldn't be all numeric
 
 ### Installing requirements.txt:
 
