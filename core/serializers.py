@@ -75,3 +75,4 @@ class UserSerializer(serializers.ModelSerializer):
 
 def check():
     print("hook")
+    print("second hook")
